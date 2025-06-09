@@ -14,6 +14,8 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoAdd }) => {
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = async (file: File) => {
+    console.log('Processing file:', file.name, file.type, file.size);
+    
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file');
       return;
@@ -29,6 +31,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoAdd }) => {
     try {
       const reader = new FileReader();
       reader.onload = (e) => {
+        console.log('File loaded successfully');
         const photo: Photo = {
           id: `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           url: e.target?.result as string,
@@ -37,12 +40,21 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoAdd }) => {
           size: file.size
         };
         
+        console.log('Adding photo:', photo.id);
         onPhotoAdd(photo);
         setIsUploading(false);
       };
+      
+      reader.onerror = (error) => {
+        console.error('FileReader error:', error);
+        alert('Error reading file. Please try again.');
+        setIsUploading(false);
+      };
+      
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error processing file:', error);
+      alert('Error processing file. Please try again.');
       setIsUploading(false);
     }
   };
@@ -52,6 +64,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoAdd }) => {
     setIsDragging(false);
     
     const files = Array.from(e.dataTransfer.files);
+    console.log('Files dropped:', files.length);
     if (files.length > 0) {
       handleFile(files[0]);
     }
@@ -69,8 +82,25 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoAdd }) => {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
+    console.log('Files selected:', files?.length);
     if (files && files.length > 0) {
       handleFile(files[0]);
+    }
+    // Reset input value to allow selecting the same file again
+    e.target.value = '';
+  };
+
+  const triggerCameraCapture = () => {
+    console.log('Camera capture triggered');
+    if (cameraInputRef.current) {
+      cameraInputRef.current.click();
+    }
+  };
+
+  const triggerFileSelect = () => {
+    console.log('File select triggered');
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -98,21 +128,23 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoAdd }) => {
               Share Your Photo
             </h3>
             <p className="text-white/80 mb-6">
-              Drag and drop your photo here, or click to browse
+              Drag and drop your photo here, or use the buttons below
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={() => fileInputRef.current?.click()}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
+                onClick={triggerFileSelect}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 min-h-[48px]"
+                type="button"
               >
                 <Upload className="w-5 h-5" />
                 Choose File
               </button>
               
               <button
-                onClick={() => cameraInputRef.current?.click()}
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105"
+                onClick={triggerCameraCapture}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:from-green-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 min-h-[48px]"
+                type="button"
               >
                 <Camera className="w-5 h-5" />
                 Take Photo
@@ -121,14 +153,17 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoAdd }) => {
           </>
         )}
         
+        {/* File input for gallery/file selection */}
         <input
           ref={fileInputRef}
           type="file"
           accept="image/*"
           onChange={handleFileSelect}
           className="hidden"
+          multiple={false}
         />
         
+        {/* Camera input with better mobile support */}
         <input
           ref={cameraInputRef}
           type="file"
@@ -136,6 +171,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoAdd }) => {
           capture="environment"
           onChange={handleFileSelect}
           className="hidden"
+          multiple={false}
         />
       </div>
       
