@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, Image } from 'lucide-react';
 import { usePhotos } from '@/hooks/usePhotos';

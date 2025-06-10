@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Photo } from '@/types/Photo';
@@ -90,6 +89,9 @@ export const usePhotos = () => {
         filename: photoData.filename,
         size: photoData.file_size
       };
+
+      // Add to local state immediately for better UX
+      setPhotos(prev => [newPhoto, ...prev]);
 
       console.log('Photo uploaded successfully:', newPhoto.id);
       return newPhoto;
