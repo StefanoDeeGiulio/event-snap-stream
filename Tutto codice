@@ -1,0 +1,1 @@
+find src -name "*.tsx" -o -name "*.ts" -o -name "*.json" | xargs cat > tutto_codice.txt
