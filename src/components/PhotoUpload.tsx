@@ -1,17 +1,14 @@
 
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, Image } from 'lucide-react';
-import { Photo } from '../types/Photo';
+import { usePhotos } from '@/hooks/usePhotos';
 
-interface PhotoUploadProps {
-  onPhotoAdd: (photo: Photo) => void;
-}
-
-const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoAdd }) => {
+const PhotoUpload: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const { uploadPhoto } = usePhotos();
 
   const handleFile = async (file: File) => {
     console.log('Processing file:', file.name, file.type, file.size);
@@ -29,32 +26,16 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoAdd }) => {
     setIsUploading(true);
 
     try {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        console.log('File loaded successfully');
-        const photo: Photo = {
-          id: `photo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          url: e.target?.result as string,
-          timestamp: Date.now(),
-          filename: file.name,
-          size: file.size
-        };
-        
-        console.log('Adding photo:', photo.id);
-        onPhotoAdd(photo);
-        setIsUploading(false);
-      };
-      
-      reader.onerror = (error) => {
-        console.error('FileReader error:', error);
-        alert('Error reading file. Please try again.');
-        setIsUploading(false);
-      };
-      
-      reader.readAsDataURL(file);
+      const result = await uploadPhoto(file);
+      if (result) {
+        alert('Photo uploaded successfully! It will appear on the display screen.');
+      } else {
+        alert('Error uploading photo. Please try again.');
+      }
     } catch (error) {
-      console.error('Error processing file:', error);
-      alert('Error processing file. Please try again.');
+      console.error('Error uploading photo:', error);
+      alert('Error uploading photo. Please try again.');
+    } finally {
       setIsUploading(false);
     }
   };
@@ -119,7 +100,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({ onPhotoAdd }) => {
         {isUploading ? (
           <div className="animate-pulse">
             <Upload className="w-12 h-12 text-blue-400 mx-auto mb-4 animate-bounce" />
-            <p className="text-white text-lg">Processing your photo...</p>
+            <p className="text-white text-lg">Uploading your photo...</p>
           </div>
         ) : (
           <>

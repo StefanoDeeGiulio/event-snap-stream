@@ -1,43 +1,15 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import QRCodeDisplay from '../components/QRCodeDisplay';
 import PhotoWall from '../components/PhotoWall';
 import AdminPanel from '../components/AdminPanel';
-import { Photo } from '../types/Photo';
+import { usePhotos } from '@/hooks/usePhotos';
 
 const Index = () => {
-  const [photos, setPhotos] = useState<Photo[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [maxPhotos] = useState(500);
+  const { photos, deletePhoto, clearAllPhotos } = usePhotos();
   const uploadUrl = `${window.location.origin}/upload`;
-
-  // Load photos from localStorage and poll for updates
-  useEffect(() => {
-    const loadPhotos = () => {
-      const savedPhotos = localStorage.getItem('eventPhotos');
-      if (savedPhotos) {
-        setPhotos(JSON.parse(savedPhotos));
-      }
-    };
-
-    loadPhotos();
-    
-    // Poll for new photos every 2 seconds
-    const interval = setInterval(loadPhotos, 2000);
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  const deletePhoto = (photoId: string) => {
-    const updatedPhotos = photos.filter(photo => photo.id !== photoId);
-    setPhotos(updatedPhotos);
-    localStorage.setItem('eventPhotos', JSON.stringify(updatedPhotos));
-  };
-
-  const clearAllPhotos = () => {
-    setPhotos([]);
-    localStorage.removeItem('eventPhotos');
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">

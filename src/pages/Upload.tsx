@@ -1,38 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import PhotoUpload from '../components/PhotoUpload';
-import { Photo } from '../types/Photo';
+import { usePhotos } from '@/hooks/usePhotos';
 
 const Upload = () => {
-  const [photos, setPhotos] = useState<Photo[]>([]);
-
-  // Load photos from localStorage on component mount
-  useEffect(() => {
-    const savedPhotos = localStorage.getItem('eventPhotos');
-    if (savedPhotos) {
-      setPhotos(JSON.parse(savedPhotos));
-    }
-  }, []);
-
-  const addPhoto = (newPhoto: Photo) => {
-    const savedPhotos = localStorage.getItem('eventPhotos');
-    const existingPhotos = savedPhotos ? JSON.parse(savedPhotos) : [];
-    const updatedPhotos = [newPhoto, ...existingPhotos];
-    
-    // Auto-delete oldest photos if we exceed the limit
-    const maxPhotos = 500;
-    if (updatedPhotos.length > maxPhotos) {
-      updatedPhotos.splice(maxPhotos);
-    }
-    
-    localStorage.setItem('eventPhotos', JSON.stringify(updatedPhotos));
-    setPhotos(updatedPhotos);
-    
-    // Show success message
-    setTimeout(() => {
-      alert('Photo uploaded successfully! It will appear on the display screen.');
-    }, 500);
-  };
+  const { photos } = usePhotos();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -46,7 +18,7 @@ const Upload = () => {
           </p>
         </div>
 
-        <PhotoUpload onPhotoAdd={addPhoto} />
+        <PhotoUpload />
         
         <div className="text-center mt-8">
           <p className="text-white/60 text-sm">
